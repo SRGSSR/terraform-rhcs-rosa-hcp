@@ -89,6 +89,9 @@ resource "rhcs_cluster_rosa_hcp" "rosa_hcp_cluster" {
   destroy_timeout                     = var.destroy_timeout
 
   lifecycle {
+    ignore_changes = [
+      properties["rosa_creator_arn"]
+    ]
     precondition {
       condition = (
         !(var.installer_role_arn != null && var.support_role_arn != null && var.worker_role_arn != null)
