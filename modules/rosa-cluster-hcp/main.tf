@@ -1,3 +1,5 @@
+data "aws_partition" "current" {}
+
 locals {
   path           = coalesce(var.path, "/")
   aws_account_id = var.aws_account_id == null ? data.aws_caller_identity.current[0].account_id : var.aws_account_id
@@ -22,7 +24,7 @@ locals {
     operator_role_prefix = var.operator_role_prefix,
     oidc_config_id       = var.oidc_config_id
   }
-  aws_account_arn = var.aws_account_arn == null ? data.aws_caller_identity.current[0].arn : var.aws_account_arn
+  aws_account_arn   = var.aws_account_arn == null ? data.aws_caller_identity.current[0].arn : var.aws_account_arn
   create_admin_user = var.create_admin_user
   admin_credentials = var.admin_credentials_username == null && var.admin_credentials_password == null ? (
     null
@@ -34,6 +36,7 @@ locals {
 resource "rhcs_cluster_rosa_hcp" "rosa_hcp_cluster" {
   name                         = var.cluster_name
   version                      = var.openshift_version
+  channel_group                = var.version_channel_group
   upgrade_acknowledgements_for = var.upgrade_acknowledgements_for
   private                      = var.private
   properties = merge(
@@ -42,11 +45,14 @@ resource "rhcs_cluster_rosa_hcp" "rosa_hcp_cluster" {
     },
     var.properties
   )
-  cloud_region   = var.aws_region == null ? data.aws_region.current[0].name : var.aws_region
+  cloud_region   = var.aws_region == null ? data.aws_region.current[0].region : var.aws_region
   aws_account_id = local.aws_account_id
-  aws_billing_account_id = var.aws_billing_account_id == null || var.aws_billing_account_id == "" ? (
-    local.aws_account_id
-  ) : (var.aws_billing_account_id)
+  // Billing ID can be empty for HCP GovCloud clusters
+  aws_billing_account_id = (data.aws_partition.current.partition == "aws-us-gov" && var.aws_billing_account_id == null) ? null : (
+    var.aws_billing_account_id == null || var.aws_billing_account_id == "" ?
+    local.aws_account_id :
+    var.aws_billing_account_id
+  )
   sts  = local.sts_roles
   tags = var.tags
   availability_zones = length(var.aws_availability_zones) > 0 ? (
@@ -80,14 +86,19 @@ resource "rhcs_cluster_rosa_hcp" "rosa_hcp_cluster" {
     ) : (
     null
   )
-  etcd_encryption  = var.etcd_encryption
-  etcd_kms_key_arn = var.etcd_kms_key_arn
-  kms_key_arn      = var.kms_key_arn
+  etcd_encryption                   = var.etcd_encryption
+  etcd_kms_key_arn                  = var.etcd_kms_key_arn
+  kms_key_arn                       = var.kms_key_arn
+  shared_vpc                        = var.shared_vpc
+  base_dns_domain                   = var.base_dns_domain
+  domain_prefix                     = var.domain_prefix
+  aws_additional_allowed_principals = var.aws_additional_allowed_principals
 
   wait_for_create_complete            = var.wait_for_create_complete
   wait_for_std_compute_nodes_complete = var.wait_for_std_compute_nodes_complete
   disable_waiting_in_destroy          = var.disable_waiting_in_destroy
   destroy_timeout                     = var.destroy_timeout
+  registry_config                     = var.registry_config
 
   lifecycle {
     precondition {
@@ -121,7 +132,7 @@ resource "rhcs_cluster_rosa_hcp" "rosa_hcp_cluster" {
 }
 
 resource "rhcs_hcp_cluster_autoscaler" "cluster_autoscaler" {
-  count = var.cluster_autoscaler_enabled == true ? 1 : 0
+  count = var.cluster_autoscaler_enabled ? 1 : 0
 
   cluster                 = rhcs_cluster_rosa_hcp.rosa_hcp_cluster.id
   max_pod_grace_period    = var.autoscaler_max_pod_grace_period
@@ -134,7 +145,8 @@ resource "rhcs_hcp_cluster_autoscaler" "cluster_autoscaler" {
 }
 
 resource "rhcs_hcp_default_ingress" "default_ingress" {
-  cluster          = rhcs_cluster_rosa_hcp.rosa_hcp_cluster.id
+  count   = rhcs_cluster_rosa_hcp.rosa_hcp_cluster.wait_for_create_complete ? 1 : 0
+  cluster = rhcs_cluster_rosa_hcp.rosa_hcp_cluster.id
   listening_method = var.default_ingress_listening_method != "" ? (
     var.default_ingress_listening_method) : (
     var.private ? "internal" : "external"

@@ -1,3 +1,12 @@
+data "aws_partition" "current" {}
+
+locals {
+  govcloud_account   = "219670896067"
+  commercial_account = "309956199498"
+  redhat_aws_account = data.aws_partition.current.partition == "aws-us-gov" ? local.govcloud_account : local.commercial_account
+  manifest_prefix    = data.aws_partition.current.partition == "aws-us-gov" ? local.govcloud_account : "amazon"
+}
+
 resource "tls_private_key" "pk" {
   algorithm = "RSA"
   rsa_bits  = 4096
@@ -38,16 +47,44 @@ resource "aws_security_group" "bastion_host_ingress" {
   }
 }
 
+data "aws_ami" "rhel9" {
+  count       = var.ami_id == null ? 1 : 0
+  most_recent = true
+
+  filter {
+    name   = "platform-details"
+    values = ["Red Hat Enterprise Linux"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+
+  filter {
+    name   = "manifest-location"
+    values = ["${local.manifest_prefix}/RHEL-9.*_HVM-*-x86_64-*-Hourly2-GP3"]
+  }
+
+  # Amazon's "Official Red Hat" account
+  owners = [local.redhat_aws_account]
+}
+
 resource "aws_instance" "bastion_host" {
   count                       = length(var.subnet_ids)
-  ami                         = var.ami_id
+  ami                         = var.ami_id != null ? var.ami_id : data.aws_ami.rhel9[0].id
   instance_type               = var.instance_type
   key_name                    = aws_key_pair.bastion_ssh_key.key_name
   vpc_security_group_ids      = [aws_security_group.bastion_host_ingress.id]
   subnet_id                   = var.subnet_ids[count.index]
   associate_public_ip_address = true
 
-  user_data                   = var.user_data_file
+  user_data                   = var.user_data_file != null ? var.user_data_file : file("${path.module}/../../assets/bastion-host-user-data.yaml")
   user_data_replace_on_change = true
   tags = {
     Name = "${var.prefix}-bastion-host"
@@ -59,5 +96,6 @@ resource "time_sleep" "bastion_resources_wait" {
   destroy_duration = "20s"
   triggers = {
     public_ips = jsonencode([for value in aws_instance.bastion_host : value.public_ip])
+    pem_path   = local_file.bastion_private_ssh_key.filename
   }
 }

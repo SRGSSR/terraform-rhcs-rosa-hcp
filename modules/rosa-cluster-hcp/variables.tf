@@ -20,6 +20,12 @@ variable "openshift_version" {
   description = "Desired version of OpenShift for the cluster, for example '4.1.0'. If version is greater than the currently running version, an upgrade will be scheduled."
 }
 
+variable "version_channel_group" {
+  type        = string
+  default     = "stable"
+  description = "Desired channel group of the version [stable, candidate, fast, nightly]."
+}
+
 variable "aws_account_id" {
   type        = string
   default     = null
@@ -143,6 +149,35 @@ variable "ec2_metadata_http_tokens" {
   type        = string
   default     = "optional"
   description = "Should cluster nodes use both v1 and v2 endpoints or just v2 endpoint of EC2 Instance Metadata Service (IMDS). Available since OpenShift 4.11.0."
+}
+
+variable "domain_prefix" {
+  type        = string
+  default     = null
+  description = "Creates a domain_prefix for your ROSA cluster. Defaults to a random string if not set"
+}
+
+variable "base_dns_domain" {
+  type        = string
+  default     = null
+  description = "Base DNS domain name previously reserved, e.g. '1vo8.p3.openshiftapps.com'."
+}
+
+variable "shared_vpc" {
+  type = object({
+    ingress_private_hosted_zone_id                = string
+    internal_communication_private_hosted_zone_id = string
+    route53_role_arn                              = string
+    vpce_role_arn                                 = string
+  })
+  default     = null
+  description = "Shared VPC settings"
+}
+
+variable "aws_additional_allowed_principals" {
+  type        = list(string)
+  default     = null
+  description = "The additional allowed principals to use when installing the cluster."
 }
 
 ##############################################################
@@ -300,4 +335,49 @@ variable "default_ingress_listening_method" {
   type        = string
   default     = ""
   description = "Listening Method for ingress. Options are [\"internal\", \"external\"]. Default is \"external\". When empty is set based on private variable."
+}
+
+##############################################################
+# Registry Configuration
+##############################################################
+variable "registry_config" {
+  type = object({
+    additional_trusted_ca = optional(map(string))
+    allowed_registries_for_import = optional(
+      list(
+        object(
+          {
+            domain_name = optional(string)
+            insecure    = optional(bool)
+          }
+        )
+      )
+    )
+    platform_allowlist_id = optional(string)
+    registry_sources = optional(
+      object(
+        {
+          allowed_registries  = optional(list(string))
+          blocked_registries  = optional(list(string))
+          insecure_registries = optional(list(string))
+        }
+      )
+    )
+  })
+  default = null
+  description = "Registry configuration for this cluster."
+
+  validation {
+    condition = var.registry_config == null ? true : (
+      var.registry_config.registry_sources == null ? true : (
+        !(
+          can(var.registry_config.registry_sources.allowed_registries) && 
+          length(coalesce(var.registry_config.registry_sources.allowed_registries, [])) > 0 &&
+          can(var.registry_config.registry_sources.blocked_registries) && 
+          length(coalesce(var.registry_config.registry_sources.blocked_registries, [])) > 0
+        )
+      )
+    )
+    error_message = "Registry config cannot specify both allowed_registries and blocked_registries - they are mutually exclusive."
+  }
 }

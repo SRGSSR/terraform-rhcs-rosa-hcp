@@ -67,6 +67,8 @@ No modules.
 | [local_file.bastion_private_ssh_key](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) | resource |
 | [time_sleep.bastion_resources_wait](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/sleep) | resource |
 | [tls_private_key.pk](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/private_key) | resource |
+| [aws_ami.rhel9](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ami) | data source |
+| [aws_partition.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/partition) | data source |
 | [http_http.myip](https://registry.terraform.io/providers/hashicorp/http/latest/docs/data-sources/http) | data source |
 
 ## Inputs
@@ -75,7 +77,7 @@ No modules.
 |------|-------------|------|---------|:--------:|
 | <a name="input_ami_id"></a> [ami\_id](#input\_ami\_id) | Amazon Machine Image to run the bastion host with | `string` | `null` | no |
 | <a name="input_cidr_blocks"></a> [cidr\_blocks](#input\_cidr\_blocks) | CIDR ranges to include as ingress allowed ranges | `list(string)` | `null` | no |
-| <a name="input_instance_type"></a> [instance\_type](#input\_instance\_type) | Instance type of the bastion hosts | `string` | `"t2.micro"` | no |
+| <a name="input_instance_type"></a> [instance\_type](#input\_instance\_type) | Instance type of the bastion hosts | `string` | `"t3.micro"` | no |
 | <a name="input_prefix"></a> [prefix](#input\_prefix) | Prefix for the name of each AWS resource | `string` | n/a | yes |
 | <a name="input_subnet_ids"></a> [subnet\_ids](#input\_subnet\_ids) | Set of subnet IDs to instantiate a bastion host against | `list(string)` | n/a | yes |
 | <a name="input_user_data_file"></a> [user\_data\_file](#input\_user\_data\_file) | User data for proxy configuration | `string` | `null` | no |
@@ -85,5 +87,6 @@ No modules.
 
 | Name | Description |
 |------|-------------|
+| <a name="output_bastion_host_pem_path"></a> [bastion\_host\_pem\_path](#output\_bastion\_host\_pem\_path) | File path of bastion host .pem |
 | <a name="output_bastion_host_public_ip"></a> [bastion\_host\_public\_ip](#output\_bastion\_host\_public\_ip) | Bastion Host Public IP |
 <!-- END_AUTOMATED_TF_DOCS_BLOCK -->
