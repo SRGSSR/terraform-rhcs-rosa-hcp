@@ -91,7 +91,8 @@ resource "rhcs_cluster_rosa_hcp" "rosa_hcp_cluster" {
 
   lifecycle {
     ignore_changes = [
-      properties["rosa_creator_arn"]
+      properties["rosa_creator_arn"],
+      compute_machine_type
     ]
     precondition {
       condition = (
