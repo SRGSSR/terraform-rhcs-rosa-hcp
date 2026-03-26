@@ -76,6 +76,7 @@ module "rosa_cluster_hcp" {
   pod_cidr                 = var.pod_cidr
   host_prefix              = var.host_prefix
   no_cni                   = var.no_cni
+  audit_log_arn            = var.audit_log_arn
   private                  = var.private
   tags                     = var.tags
   properties               = var.properties
@@ -105,9 +106,9 @@ module "rosa_cluster_hcp" {
   # Default Machine Pool
   #######################
 
-  replicas               = var.replicas
-  compute_machine_type   = var.compute_machine_type
-  aws_availability_zones = var.aws_availability_zones
+  replicas                                  = var.replicas
+  compute_machine_type                      = var.compute_machine_type
+  aws_availability_zones                    = var.aws_availability_zones
   aws_additional_compute_security_group_ids = var.aws_additional_compute_security_group_ids
 
   ########

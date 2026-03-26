@@ -20,6 +20,12 @@ variable "oidc_config_id" {
   description = "The unique identifier associated with users authenticated through OpenID Connect (OIDC) within the ROSA cluster. If create_oidc is false this attribute is required."
 }
 
+variable "audit_log_arn" {
+  type        = string
+  default     = ""
+  description = "The Amazon Resource Name (ARN) of an IAM role that has permissions to send audit logs to a CloudWatch Logs log group. Defaults to empty string to disable audit log forwarding."
+}
+
 variable "aws_subnet_ids" {
   type        = list(string)
   description = "The Subnet IDs to use when installing the cluster."
@@ -328,7 +334,7 @@ variable "oidc_endpoint_url" {
 }
 
 variable "machine_pools" {
-  type = map(any)
+  type        = map(any)
   default     = {}
   description = "Provides a generic approach to add multiple machine pools after the creation of the cluster. This variable allows users to specify configurations for multiple machine pools in a flexible and customizable manner, facilitating the management of resources post-cluster deployment. For additional details regarding the variables utilized, refer to the [machine-pool sub-module](./modules/machine-pool). For non-primitive variables (such as maps, lists, and objects), supply the JSON-encoded string."
 }
@@ -342,7 +348,7 @@ variable "identity_providers" {
 variable "kubelet_configs" {
   type        = map(any)
   default     = {}
-  description = "Provides a generic approach to add multiple kubelet configs after the creation of the cluster. This variable allows users to specify configurations for multiple kubelet configs in a flexible and customizable manner, facilitating the management of resources post-cluster deployment. For additional details regarding the variables utilized, refer to the [idp sub-module](./modules/kubelet-configs). For non-primitive variables (such as maps, lists, and objects), supply the JSON-encoded string." 
+  description = "Provides a generic approach to add multiple kubelet configs after the creation of the cluster. This variable allows users to specify configurations for multiple kubelet configs in a flexible and customizable manner, facilitating the management of resources post-cluster deployment. For additional details regarding the variables utilized, refer to the [idp sub-module](./modules/kubelet-configs). For non-primitive variables (such as maps, lists, and objects), supply the JSON-encoded string."
 }
 
 variable "ignore_machine_pools_deletion_error" {

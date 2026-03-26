@@ -20,6 +20,12 @@ variable "openshift_version" {
   description = "Desired version of OpenShift for the cluster, for example '4.1.0'. If version is greater than the currently running version, an upgrade will be scheduled."
 }
 
+variable "audit_log_arn" {
+  type        = string
+  default     = ""
+  description = "The Amazon Resource Name (ARN) of an IAM role that has permissions to send audit logs to a CloudWatch Logs log group. Defaults to empty string to disable audit log forwarding."
+}
+
 variable "aws_account_id" {
   type        = string
   default     = null

@@ -22,7 +22,7 @@ locals {
     operator_role_prefix = var.operator_role_prefix,
     oidc_config_id       = var.oidc_config_id
   }
-  aws_account_arn = var.aws_account_arn == null ? data.aws_caller_identity.current[0].arn : var.aws_account_arn
+  aws_account_arn   = var.aws_account_arn == null ? data.aws_caller_identity.current[0].arn : var.aws_account_arn
   create_admin_user = var.create_admin_user
   admin_credentials = var.admin_credentials_username == null && var.admin_credentials_password == null ? (
     null
@@ -66,11 +66,12 @@ resource "rhcs_cluster_rosa_hcp" "rosa_hcp_cluster" {
   admin_credentials                         = local.admin_credentials
   ec2_metadata_http_tokens                  = var.ec2_metadata_http_tokens
 
-  machine_cidr = var.machine_cidr
-  service_cidr = var.service_cidr
-  pod_cidr     = var.pod_cidr
-  host_prefix  = var.host_prefix
-  no_cni       = var.no_cni
+  machine_cidr  = var.machine_cidr
+  service_cidr  = var.service_cidr
+  pod_cidr      = var.pod_cidr
+  host_prefix   = var.host_prefix
+  no_cni        = var.no_cni
+  audit_log_arn = var.audit_log_arn
   proxy = var.http_proxy != null || var.https_proxy != null || var.no_proxy != null || var.additional_trust_bundle != null ? (
     {
       http_proxy              = var.http_proxy
@@ -139,7 +140,7 @@ resource "rhcs_hcp_cluster_autoscaler" "cluster_autoscaler" {
 }
 
 resource "rhcs_hcp_default_ingress" "default_ingress" {
-  cluster          = rhcs_cluster_rosa_hcp.rosa_hcp_cluster.id
+  cluster = rhcs_cluster_rosa_hcp.rosa_hcp_cluster.id
   listening_method = var.default_ingress_listening_method != "" ? (
     var.default_ingress_listening_method) : (
     var.private ? "internal" : "external"
