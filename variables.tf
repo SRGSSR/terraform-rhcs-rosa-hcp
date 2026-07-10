@@ -84,6 +84,18 @@ variable "host_prefix" {
   description = "Subnet prefix length to assign to each individual node. For example, if host prefix is set to \"23\", then each node is assigned a /23 subnet out of the given CIDR."
 }
 
+variable "no_cni" {
+  type        = bool
+  default     = false
+  description = "Disable CNI creation to let users bring their own CNI. (default: false)"
+}
+
+variable "audit_log_arn" {
+  type        = string
+  default     = ""
+  description = "The Amazon Resource Name (ARN) of an IAM role that has permissions to send audit logs to a CloudWatch Logs log group. Defaults to empty string to disable audit log forwarding."
+}
+
 variable "create_admin_user" {
   type        = bool
   default     = null

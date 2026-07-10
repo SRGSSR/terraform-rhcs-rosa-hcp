@@ -79,10 +79,12 @@ resource "rhcs_cluster_rosa_hcp" "rosa_hcp_cluster" {
   ec2_metadata_http_tokens                  = var.ec2_metadata_http_tokens
   external_auth_providers_enabled           = var.external_auth_providers_enabled
 
-  machine_cidr = var.machine_cidr
-  service_cidr = var.service_cidr
-  pod_cidr     = var.pod_cidr
-  host_prefix  = var.host_prefix
+  machine_cidr  = var.machine_cidr
+  service_cidr  = var.service_cidr
+  pod_cidr      = var.pod_cidr
+  host_prefix   = var.host_prefix
+  no_cni        = var.no_cni
+  audit_log_arn = var.audit_log_arn
   proxy = var.http_proxy != null || var.https_proxy != null || var.no_proxy != null || var.additional_trust_bundle != null ? (
     {
       http_proxy              = var.http_proxy
@@ -108,6 +110,10 @@ resource "rhcs_cluster_rosa_hcp" "rosa_hcp_cluster" {
   registry_config                     = var.registry_config
 
   lifecycle {
+    ignore_changes = [
+      properties["rosa_creator_arn"],
+      compute_machine_type
+    ]
     precondition {
       condition = (
         !(var.installer_role_arn != null && var.support_role_arn != null && var.worker_role_arn != null)

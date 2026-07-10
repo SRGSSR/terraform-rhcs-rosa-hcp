@@ -85,6 +85,8 @@ module "rosa_cluster_hcp" {
   service_cidr                      = var.service_cidr
   pod_cidr                          = var.pod_cidr
   host_prefix                       = var.host_prefix
+  no_cni                            = var.no_cni
+  audit_log_arn                     = var.audit_log_arn
   private                           = var.private
   tags                              = var.tags
   properties                        = var.properties
