@@ -573,3 +573,18 @@ variable "registry_config" {
     error_message = "Registry config cannot specify both allowed_registries and blocked_registries - they are mutually exclusive."
   }
 }
+
+##############################################################
+# auto node variables
+##############################################################
+variable "auto_node_mode" {
+  type        = string
+  default     = null
+  description = "AutoNode mode. Currently only enabled is supported."
+}
+
+variable "auto_node_role_arn" {
+  type        = string
+  default     = null
+  description = "AWS IAM role ARN used by the Karpenter controller when AutoNode is enabled."
+}

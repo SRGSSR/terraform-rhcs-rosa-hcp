@@ -109,6 +109,15 @@ resource "rhcs_cluster_rosa_hcp" "rosa_hcp_cluster" {
   destroy_timeout                     = var.destroy_timeout
   registry_config                     = var.registry_config
 
+  auto_node = var.auto_node_mode != null && var.auto_node_role_arn != null ? (
+    {
+      mode     = var.auto_node_mode
+      role_arn = var.auto_node_role_arn
+    }
+    ) : (
+    null
+  )
+
   lifecycle {
     ignore_changes = [
       properties["rosa_creator_arn"],
