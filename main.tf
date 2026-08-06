@@ -154,6 +154,12 @@ module "rosa_cluster_hcp" {
   )
   default_ingress_component_routes = var.default_ingress_component_routes
   registry_config                  = var.registry_config
+
+  ##################
+  # auto_node
+  ##################
+  auto_node_mode     = var.auto_node_mode
+  auto_node_role_arn = var.auto_node_role_arn
 }
 
 ######################################
