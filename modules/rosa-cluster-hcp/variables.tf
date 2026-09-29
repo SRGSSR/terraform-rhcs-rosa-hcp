@@ -149,6 +149,7 @@ variable "host_prefix" {
 variable "no_cni" {
   type        = bool
   default     = false
+  nullable    = false
   description = "Disable CNI creation to let users bring their own CNI. When true, wait_for_std_compute_nodes_complete is forced to false. After the creation of the resource, it is not possible to update the attribute value. (default: false)"
 }
 
