@@ -103,8 +103,10 @@ resource "rhcs_cluster_rosa_hcp" "rosa_hcp_cluster" {
   domain_prefix                     = var.domain_prefix
   aws_additional_allowed_principals = var.aws_additional_allowed_principals
 
+  # wait_for_std_compute_nodes_complete is forced off with no_cni: compute nodes stay
+  # NotReady until the user installs a CNI, so the waiter would block until it times out.
   wait_for_create_complete            = var.wait_for_create_complete
-  wait_for_std_compute_nodes_complete = var.wait_for_std_compute_nodes_complete
+  wait_for_std_compute_nodes_complete = var.no_cni ? false : var.wait_for_std_compute_nodes_complete
   disable_waiting_in_destroy          = var.disable_waiting_in_destroy
   destroy_timeout                     = var.destroy_timeout
   registry_config                     = var.registry_config
